@@ -29,6 +29,7 @@ def track_pc_email_stat():
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
+    # Insert to DB template #
     # conn = connection_pool.getconn()
     # if conn is None:
     #     logging.error("Failed to connect to the database")
