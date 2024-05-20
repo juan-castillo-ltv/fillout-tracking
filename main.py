@@ -22,7 +22,7 @@ connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10,  # minconn, maxconn
                                                      sslmode=DB_CREDENTIALS['sslmode'])
 
 @app.route('/fillout-free', methods=['POST'])
-def track_pc_email_stat():
+def track_free_user_survey():
     timestamp = datetime.datetime.now()
     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_data = request.get_json()
@@ -66,7 +66,7 @@ def track_pc_email_stat():
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 @app.route('/fillout-paid', methods=['POST'])
-def track_pc_email_stat():
+def track_paid_user_survey():
     timestamp = datetime.datetime.now()
     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_data = request.get_json()
@@ -77,7 +77,7 @@ def track_pc_email_stat():
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 @app.route('/fillout-longtime-paid', methods=['POST'])
-def track_pc_email_stat():
+def track_longtime_paid_user_survey():
     timestamp = datetime.datetime.now()
     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_data = request.get_json()
