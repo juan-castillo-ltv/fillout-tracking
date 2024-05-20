@@ -60,8 +60,30 @@ def track_pc_email_stat():
     #     'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
     #     'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
     # }
-    logging.info(f"Received PC webhook data at {formatted_timestamp} : {event_data}")
+    logging.info(f"Received free user survey webhook data at {formatted_timestamp} : {event_data}")
     # logging.info(f"Clean PC data: {needed_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/fillout-paid', methods=['POST'])
+def track_pc_email_stat():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received paid user survey data at {formatted_timestamp} : {event_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/fillout-longtime-paid', methods=['POST'])
+def track_pc_email_stat():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received long time paid user survey data at {formatted_timestamp} : {event_data}")
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 if __name__ == '__main__':
