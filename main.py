@@ -57,17 +57,17 @@ def track_free_user_survey():
             "finished",
             "Ending",
             None,
-            str(event_data.get('submission',{}).get('questions',[{}])[0].get('value')),
-            str(event_data.get('submission',{}).get('questions',[{}])[1].get('value')),
+            str(event_data.get('submission',{}).get('questions',[])[0].get('value')),
+            str(event_data.get('submission',{}).get('questions',[])[1].get('value')),
             None,
-            event_data.get('submission',{}).get('questions',[{}])[3].get('value'),
+            event_data.get('submission',{}).get('questions',[])[3].get('value'),
             event_data.get('submission',{}).get('calculations',{}).get('urlParameters',{}).get('value'),
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
             None,
             re.search(r'^(.*?) -', event_data.get('formName')).group(1),
             "Free User",
-            event_data.get('submission',{}).get('questions',[{}])[2].get('value')
+            event_data.get('submission',{}).get('questions',[])[2].get('value')
         ))
         conn.commit()
         logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
@@ -99,6 +99,8 @@ def track_paid_user_survey():
         logging.error("Failed to connect to the database")
         return jsonify({"error": "Database connection error"}), 500
     
+    print('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
+
     cur = conn.cursor()
     try:
         cur.execute("""
@@ -117,10 +119,10 @@ def track_paid_user_survey():
             "finished",
             "Ending",
             None,
-            str(event_data.get('submission',{}).get('questions',[{}])[0].get('value')),
-            str(event_data.get('submission',{}).get('questions',[{}])[1].get('value')),
-            event_data.get('submission',{}).get('questions',[{}])[2].get('value'),
-            event_data.get('submission',{}).get('questions',[{}])[3].get('value'),
+            str(event_data.get('submission',{}).get('questions',[])[0].get('value')),
+            str(event_data.get('submission',{}).get('questions',[])[1].get('value')),
+            event_data.get('submission',{}).get('questions',[])[2].get('value'),
+            event_data.get('submission',{}).get('questions',[])[3].get('value'),
             event_data.get('submission',{}).get('calculations',{}).get('urlParameters',{}).get('value'),
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
@@ -176,10 +178,10 @@ def track_longtime_paid_user_survey():
             "finished",
             "Ending",
             None,
-            str(event_data.get('submission',{}).get('questions',[{}])[0].get('value')),
-            str(event_data.get('submission',{}).get('questions',[{}])[1].get('value')),
-            event_data.get('submission',{}).get('questions',[{}])[2].get('value'),
-            event_data.get('submission',{}).get('questions',[{}])[3].get('value'),
+            str(event_data.get('submission',{}).get('questions',[])[0].get('value')),
+            str(event_data.get('submission',{}).get('questions',[])[1].get('value')),
+            event_data.get('submission',{}).get('questions',[])[2].get('value'),
+            event_data.get('submission',{}).get('questions',[])[3].get('value'),
             event_data.get('submission',{}).get('calculations',{}).get('urlParameters',{}).get('value'),
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
