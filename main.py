@@ -33,6 +33,9 @@ def track_free_user_survey():
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
+    logging.info('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
+    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+
     #Insert to DB template #
     conn = connection_pool.getconn()
     if conn is None:
@@ -70,7 +73,7 @@ def track_free_user_survey():
             event_data.get('submission',{}).get('questions',[])[2].get('value')
         ))
         conn.commit()
-        logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+        
     except Exception as e:
         logging.error(f"Failed to insert event data: {e}")
         conn.rollback()
@@ -99,7 +102,8 @@ def track_paid_user_survey():
         logging.error("Failed to connect to the database")
         return jsonify({"error": "Database connection error"}), 500
     
-    print('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
+    logging.info('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
+    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
 
     cur = conn.cursor()
     try:
@@ -132,7 +136,6 @@ def track_paid_user_survey():
             None
         ))
         conn.commit()
-        logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
     except Exception as e:
         logging.error(f"Failed to insert event data: {e}")
         conn.rollback()
@@ -154,6 +157,8 @@ def track_longtime_paid_user_survey():
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
     
+    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+
     #Insert to DB template #
     conn = connection_pool.getconn()
     if conn is None:
@@ -191,7 +196,7 @@ def track_longtime_paid_user_survey():
             None
         ))
         conn.commit()
-        logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+        
     except Exception as e:
         logging.error(f"Failed to insert event data: {e}")
         conn.rollback()
