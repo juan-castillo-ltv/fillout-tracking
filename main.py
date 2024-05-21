@@ -30,11 +30,12 @@ def track_free_user_survey():
     est_tz = pytz.timezone('America/New_York')
     cst_tz = pytz.timezone('America/Chicago')
     event_data = request.get_json()
+    app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
-    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : {event_data}")
 
     #Insert to DB template #
     conn = connection_pool.getconn()
@@ -68,7 +69,7 @@ def track_free_user_survey():
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
             None,
-            re.search(r'^(.*?) -', event_data.get('formName')).group(1),
+            app_name,
             "Free User",
             event_data.get('submission',{}).get('questions',[])[2].get('value')
         ))
@@ -82,7 +83,7 @@ def track_free_user_survey():
         cur.close()
         connection_pool.putconn(conn)
     
-    logging.info(f"Received free user survey webhook data at {formatted_timestamp} : {event_data}")
+    
     # logging.info(f"Clean PC data: {needed_data}")
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
@@ -93,6 +94,7 @@ def track_paid_user_survey():
     est_tz = pytz.timezone('America/New_York')
     cst_tz = pytz.timezone('America/Chicago')
     event_data = request.get_json()
+    app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
     
@@ -103,7 +105,7 @@ def track_paid_user_survey():
         return jsonify({"error": "Database connection error"}), 500
     
     logging.info('test ' + str(event_data.get('submission',{}).get('questions',[])[0].get('value')))
-    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : {event_data}")
 
     cur = conn.cursor()
     try:
@@ -131,7 +133,7 @@ def track_paid_user_survey():
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
             None,
-            re.search(r'^(.*?) -', event_data.get('formName')).group(1),
+            app_name,
             "Paid User",
             None
         ))
@@ -144,7 +146,7 @@ def track_paid_user_survey():
         cur.close()
         connection_pool.putconn(conn)
 
-    logging.info(f"Received paid user survey data at {formatted_timestamp} : {event_data}")
+    
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 @app.route('/fillout-longtime-paid', methods=['POST'])
@@ -154,10 +156,11 @@ def track_longtime_paid_user_survey():
     est_tz = pytz.timezone('America/New_York')
     cst_tz = pytz.timezone('America/Chicago')
     event_data = request.get_json()
+    app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
     
-    logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : {event_data}")
 
     #Insert to DB template #
     conn = connection_pool.getconn()
@@ -191,7 +194,7 @@ def track_longtime_paid_user_survey():
             None,
             f"https://build.fillout.com/editor/6zF5G3axRfus/results?sessionId={event_data.get('submission',{}).get('submissionId')}",
             None,
-            re.search(r'^(.*?) -', event_data.get('formName')).group(1),
+            app_name,
             "Long Time Paid",
             None
         ))
@@ -205,7 +208,7 @@ def track_longtime_paid_user_survey():
         cur.close()
         connection_pool.putconn(conn)
 
-    logging.info(f"Received long time paid user survey data at {formatted_timestamp} : {event_data}")
+    
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 if __name__ == '__main__':
