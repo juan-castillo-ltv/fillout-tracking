@@ -42,7 +42,7 @@ def track_free_user_survey():
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO coupons_redeemed (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
+            INSERT INTO fillout_surveys (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
                     submission_started_cst, status, current_step, enrichment_info, features_rating, cs_rating, proposed_app_changes, email, email2, errors,
                     url, network_id, app, survey_type, plan_upgrade_requests)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -102,7 +102,7 @@ def track_paid_user_survey():
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO coupons_redeemed (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
+            INSERT INTO fillout_surveys (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
                     submission_started_cst, status, current_step, enrichment_info, features_rating, cs_rating, proposed_app_changes, email, email2, errors,
                     url, network_id, app, survey_type, plan_upgrade_requests)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -161,7 +161,7 @@ def track_longtime_paid_user_survey():
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO coupons_redeemed (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
+            INSERT INTO fillout_surveys (submission_id, submission_dt_utc, submission_dt_est, submission_dt_cst, submission_started_utc, submission_started_est,
                     submission_started_cst, status, current_step, enrichment_info, features_rating, cs_rating, proposed_app_changes, email, email2, errors,
                     url, network_id, app, survey_type, plan_upgrade_requests)
             VALUES (%s, %s, %s, %s, %s, %s)
