@@ -218,11 +218,13 @@ def track_new_pc_user():
     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_data = request.get_json()
     app_name = 'PC'
+    id = event_data.get('data', {}).get('item', {}).get('id')
+    email = event_data.get('data', {}).get('item', {}).get('email')
     #app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
-    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : {event_data}")
+    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : email: {email} & id: {id}")
     # logging.info(f"Clean PC data: {needed_data}")
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
