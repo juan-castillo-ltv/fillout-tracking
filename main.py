@@ -211,5 +211,21 @@ def track_longtime_paid_user_survey():
     
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
+
+@app.route('/pc-new-intercom-user', methods=['POST'])
+def track_new_pc_user():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    app_name = 'PC'
+    #app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : {event_data}")
+    # logging.info(f"Clean PC data: {needed_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
