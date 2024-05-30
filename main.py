@@ -301,5 +301,27 @@ def track_icu_email_stat():
     logging.info(f"Email stat webhook received. Clean ICU data: {needed_data}")
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
+@app.route('/tfx-email-stats', methods=['POST'])
+def track_tfx_email_stat():
+    #timestamp = datetime.datetime.now()
+    #formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    needed_data = {
+        'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
+        'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
+        'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
+        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
+        'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
+        'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
+        'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
+    }
+    logging.info(f"Received TFX webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    logging.info(f"Email stat webhook received. Clean TFX data: {needed_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
