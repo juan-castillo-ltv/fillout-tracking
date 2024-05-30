@@ -23,6 +23,7 @@ connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10,  # minconn, maxconn
                                                      password=DB_CREDENTIALS['password'],
                                                      sslmode=DB_CREDENTIALS['sslmode'])
 
+##########################FILLOUT SURVEYS#################################
 @app.route('/fillout-free', methods=['POST'])
 def track_free_user_survey():
     timestamp = datetime.datetime.now()
@@ -211,7 +212,7 @@ def track_longtime_paid_user_survey():
     
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
-
+###############################INTERCOM NEW USERS################################
 @app.route('/pc-new-intercom-user', methods=['POST'])
 def track_new_pc_user():
     timestamp = datetime.datetime.now()
@@ -228,6 +229,77 @@ def track_new_pc_user():
     # logging.info(f"Clean PC data: {needed_data}")
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
+###############################EMAIL STATS################################
+@app.route('/pc-email-stats', methods=['POST'])
+def track_pc_email_stat():
+    #timestamp = datetime.datetime.now()
+    #formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    # conn = connection_pool.getconn()
+    # if conn is None:
+    #     logging.error("Failed to connect to the database")
+    #     return jsonify({"error": "Database connection error"}), 500
+    
+    # cur = conn.cursor()
+    # try:
+    #     cur.execute("""
+    #         INSERT INTO intercom_email_stats (created_at_utc,email, name, shop_url, app, coupon_redeemed)
+    #         VALUES (%s, %s, %s, %s, %s, %s)
+    #     """, (
+    #         created_at_utc,
+    #         event_data.get('email'),
+    #         event_data.get('name'),
+    #         event_data.get('shop_url'),
+    #         event_data.get('app'),
+    #         event_data.get('coupon_redeemed')
+    #     ))
+    #     conn.commit()
+    #     logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
+    # except Exception as e:
+    #     logging.error(f"Failed to insert event data: {e}")
+    #     conn.rollback()
+    #     return jsonify({"error": "Failed to insert event data"}), 500
+    # finally:
+    #     cur.close()
+    #     connection_pool.putconn(conn)
+    needed_data = {
+        'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
+        'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
+        'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
+        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
+        'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
+        'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
+        'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
+    }
+    logging.info(f"Received PC webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    logging.info(f"Email stat webhook received. Clean PC data: {needed_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/icu-email-stats', methods=['POST'])
+def track_icu_email_stat():
+    #timestamp = datetime.datetime.now()
+    #formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    needed_data = {
+        'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
+        'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
+        'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
+        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
+        'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
+        'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
+        'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
+    }
+    logging.info(f"Received ICU webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    logging.info(f"Email stat webhook received. Clean ICU data: {needed_data}")
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
