@@ -238,33 +238,6 @@ def track_pc_email_stat():
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
-    # conn = connection_pool.getconn()
-    # if conn is None:
-    #     logging.error("Failed to connect to the database")
-    #     return jsonify({"error": "Database connection error"}), 500
-    
-    # cur = conn.cursor()
-    # try:
-    #     cur.execute("""
-    #         INSERT INTO intercom_email_stats (created_at_utc,email, name, shop_url, app, coupon_redeemed)
-    #         VALUES (%s, %s, %s, %s, %s, %s)
-    #     """, (
-    #         created_at_utc,
-    #         event_data.get('email'),
-    #         event_data.get('name'),
-    #         event_data.get('shop_url'),
-    #         event_data.get('app'),
-    #         event_data.get('coupon_redeemed')
-    #     ))
-    #     conn.commit()
-    #     logging.info(f"Received webhook data at {formatted_timestamp} : {event_data}")
-    # except Exception as e:
-    #     logging.error(f"Failed to insert event data: {e}")
-    #     conn.rollback()
-    #     return jsonify({"error": "Failed to insert event data"}), 500
-    # finally:
-    #     cur.close()
-    #     connection_pool.putconn(conn)
     needed_data = {
         'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
         'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
@@ -275,8 +248,40 @@ def track_pc_email_stat():
         'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
         'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
     }
-    logging.info(f"Received PC webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    #logging.info(f"Received PC webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
     logging.info(f"Email stat webhook received. Clean PC data: {needed_data}")
+    
+    conn = connection_pool.getconn()
+    if conn is None:
+        logging.error("Failed to connect to the database")
+        return jsonify({"error": "Database connection error"}), 500
+    
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO intercom_email_stats (created_at_utc,content_type,stat_type,email_series,email_title,name,email,shop_url,app)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            needed_data['created_at_utc'],
+            needed_data['content_type'],
+            needed_data['stat_type'],
+            needed_data['email_series'],
+            needed_data['email_title'],
+            needed_data['name'],
+            needed_data['email'],
+            needed_data['shop_url'],
+            "PC"
+        ))
+        conn.commit()
+        logging.info(f"Inserted webhook data into DB table.")
+    except Exception as e:
+        logging.error(f"Failed to insert event data: {e}")
+        conn.rollback()
+        return jsonify({"error": "Failed to insert event data"}), 500
+    finally:
+        cur.close()
+        connection_pool.putconn(conn)
+
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 @app.route('/icu-email-stats', methods=['POST'])
@@ -297,8 +302,40 @@ def track_icu_email_stat():
         'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
         'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
     }
-    logging.info(f"Received ICU webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    #logging.info(f"Received ICU webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
     logging.info(f"Email stat webhook received. Clean ICU data: {needed_data}")
+
+    conn = connection_pool.getconn()
+    if conn is None:
+        logging.error("Failed to connect to the database")
+        return jsonify({"error": "Database connection error"}), 500
+    
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO intercom_email_stats (created_at_utc,content_type,stat_type,email_series,email_title,name,email,shop_url,app)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            needed_data['created_at_utc'],
+            needed_data['content_type'],
+            needed_data['stat_type'],
+            needed_data['email_series'],
+            needed_data['email_title'],
+            needed_data['name'],
+            needed_data['email'],
+            needed_data['shop_url'],
+            "ICU"
+        ))
+        conn.commit()
+        logging.info(f"Inserted webhook data into DB table.")
+    except Exception as e:
+        logging.error(f"Failed to insert event data: {e}")
+        conn.rollback()
+        return jsonify({"error": "Failed to insert event data"}), 500
+    finally:
+        cur.close()
+        connection_pool.putconn(conn)
+
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 @app.route('/tfx-email-stats', methods=['POST'])
@@ -319,9 +356,150 @@ def track_tfx_email_stat():
         'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
         'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
     }
-    logging.info(f"Received TFX webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    #logging.info(f"Received TFX webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
     logging.info(f"Email stat webhook received. Clean TFX data: {needed_data}")
+
+    conn = connection_pool.getconn()
+    if conn is None:
+        logging.error("Failed to connect to the database")
+        return jsonify({"error": "Database connection error"}), 500
+    
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO intercom_email_stats (created_at_utc,content_type,stat_type,email_series,email_title,name,email,shop_url,app)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            needed_data['created_at_utc'],
+            needed_data['content_type'],
+            needed_data['stat_type'],
+            needed_data['email_series'],
+            needed_data['email_title'],
+            needed_data['name'],
+            needed_data['email'],
+            needed_data['shop_url'],
+            "TFX"
+        ))
+        conn.commit()
+        logging.info(f"Inserted webhook data into DB table.")
+    except Exception as e:
+        logging.error(f"Failed to insert event data: {e}")
+        conn.rollback()
+        return jsonify({"error": "Failed to insert event data"}), 500
+    finally:
+        cur.close()
+        connection_pool.putconn(conn)
+
     return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/satc-email-stats', methods=['POST'])
+def track_satc_email_stat():
+    #timestamp = datetime.datetime.now()
+    #formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    needed_data = {
+        'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
+        'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
+        'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
+        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
+        'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
+        'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
+        'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
+    }
+    #logging.info(f"Received SATC webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    logging.info(f"Email stat webhook received. Clean SATC data: {needed_data}")
+
+    conn = connection_pool.getconn()
+    if conn is None:
+        logging.error("Failed to connect to the database")
+        return jsonify({"error": "Database connection error"}), 500
+    
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO intercom_email_stats (created_at_utc,content_type,stat_type,email_series,email_title,name,email,shop_url,app)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            needed_data['created_at_utc'],
+            needed_data['content_type'],
+            needed_data['stat_type'],
+            needed_data['email_series'],
+            needed_data['email_title'],
+            needed_data['name'],
+            needed_data['email'],
+            needed_data['shop_url'],
+            "SATC"
+        ))
+        conn.commit()
+        logging.info(f"Inserted webhook data into DB table.")
+    except Exception as e:
+        logging.error(f"Failed to insert event data: {e}")
+        conn.rollback()
+        return jsonify({"error": "Failed to insert event data"}), 500
+    finally:
+        cur.close()
+        connection_pool.putconn(conn)
+
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/sr-email-stats', methods=['POST'])
+def track_sr_email_stat():
+    #timestamp = datetime.datetime.now()
+    #formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    needed_data = {
+        'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
+        'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
+        'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
+        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
+        'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
+        'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
+        'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
+    }
+    #logging.info(f"Received SR webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
+    logging.info(f"Email stat webhook received. Clean SR data: {needed_data}")
+
+    conn = connection_pool.getconn()
+    if conn is None:
+        logging.error("Failed to connect to the database")
+        return jsonify({"error": "Database connection error"}), 500
+    
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO intercom_email_stats (created_at_utc,content_type,stat_type,email_series,email_title,name,email,shop_url,app)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            needed_data['created_at_utc'],
+            needed_data['content_type'],
+            needed_data['stat_type'],
+            needed_data['email_series'],
+            needed_data['email_title'],
+            needed_data['name'],
+            needed_data['email'],
+            needed_data['shop_url'],
+            "SR"
+        ))
+        conn.commit()
+        logging.info(f"Inserted webhook data into DB table.")
+    except Exception as e:
+        logging.error(f"Failed to insert event data: {e}")
+        conn.rollback()
+        return jsonify({"error": "Failed to insert event data"}), 500
+    finally:
+        cur.close()
+        connection_pool.putconn(conn)
+
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
