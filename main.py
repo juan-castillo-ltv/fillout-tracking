@@ -399,7 +399,7 @@ def track_cod_email_stat():
     event_data = request.get_json()
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
-
+    app_name = re.search(r'^(.*?) -', event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title')).group(1)
     needed_data = {
         'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
         'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
@@ -411,7 +411,7 @@ def track_cod_email_stat():
         'shop_url' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('custom_attributes',{}).get('shop_url')
     }
     #logging.info(f"Received SATC webhook data at {event_data.get('data',{}).get('item',{}).get('created_at',{})} : {event_data}")
-    logging.info(f"Email stat webhook received. Clean SATC data: {needed_data}")
+    logging.info(f"Email stat webhook received. Clean {app_name} data: {needed_data}")
 
     conn = connection_pool.getconn()
     if conn is None:
@@ -432,7 +432,7 @@ def track_cod_email_stat():
             needed_data['name'],
             needed_data['email'],
             needed_data['shop_url'],
-            "COD"
+            app_name
         ))
         conn.commit()
         logging.info(f"Inserted webhook data into DB table.")
