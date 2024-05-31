@@ -399,12 +399,18 @@ def track_cod_email_stat():
     event_data = request.get_json()
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
-    app_name = re.search(r'^(.*?) ', event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title')).group(1)
+    email_series = event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title')
+    app_name_raw = re.search(r'^(.*?) ', email_series).group(1) if email_series else None
+    if app_name_raw == 'SATC' or app_name_raw == 'SR':
+        app_name = app_name_raw
+    else:
+        app_name = 'SATC'
+
     needed_data = {
         'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
         'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
         'stat_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('stat_type'),
-        'email_series' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title'),
+        'email_series' : email_series,
         'email_title' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_title'),
         'name' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('name'),
         'email' : event_data.get('data',{}).get('item',{}).get('contact',{}).get('email'),
