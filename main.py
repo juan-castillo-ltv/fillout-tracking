@@ -399,7 +399,7 @@ def track_cod_email_stat():
     event_data = request.get_json()
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
-    app_name = re.search(r'^(.*?) -', event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title')).group(1)
+    app_name = re.search(r'^(.*?) ', event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('series_title')).group(1)
     needed_data = {
         'created_at_utc': event_data.get('data',{}).get('item',{}).get('created_at'),
         'content_type' : event_data.get('data',{}).get('item',{}).get('content_stat',{}).get('content_type'),
