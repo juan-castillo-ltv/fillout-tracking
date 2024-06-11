@@ -7,8 +7,15 @@ import logging
 import datetime
 import pytz
 import re
+import yaml
+import hashlib
+import sys
+from google.ads.googleads.client import GoogleAdsClient
+from google.ads.googleads.errors import GoogleAdsException
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s', handlers=[logging.StreamHandler()])
-from config import DB_CREDENTIALS
+from config import DB_CREDENTIALS, GOOGLE_ADS_CONFIG, LTV_SAAS_GOOGLE_ADS_ID, PC_GOOGLE_ADS_ID, PC_USER_LIST, ICU_GOOGLE_ADS_ID 
+from config import ICU_USER_LIST, TFX_GOOGLE_ADS_ID, TFX_USER_LIST, COD_GOOGLE_ADS_ID, COD_USER_LIST
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS on the Flask app
@@ -22,6 +29,56 @@ connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10,  # minconn, maxconn
                                                      user=DB_CREDENTIALS['user'],
                                                      password=DB_CREDENTIALS['password'],
                                                      sslmode=DB_CREDENTIALS['sslmode'])
+
+###################### ADD EMAILS TO GOOGLE ADS ############################
+def add_email_to_customer_list(client, customer_id, user_list_id, email_address):
+    user_data_service = client.get_service("UserDataService")
+
+    # Hash the email address using SHA-256
+    hashed_email = hashlib.sha256(email_address.encode('utf-8')).hexdigest()
+    #logging.info(f'Hashed email: {hashed_email}')
+
+    # Create a user identifier with the hashed email
+    user_identifier = client.get_type("UserIdentifier")
+    user_identifier.hashed_email = hashed_email
+
+    # Create the user data
+    user_data = client.get_type("UserData")
+    user_data.user_identifiers.append(user_identifier)
+
+    # Create the operation to add the user to the user list
+    user_data_operation = client.get_type("UserDataOperation")
+    user_data_operation.create = user_data
+
+    # Create the metadata for the user list
+    customer_match_user_list_metadata = client.get_type("CustomerMatchUserListMetadata")
+    customer_match_user_list_metadata.user_list = f'customers/{customer_id}/userLists/{user_list_id}'
+
+    # Create the request
+    request = client.get_type("UploadUserDataRequest")
+    request.customer_id = customer_id
+    request.operations.append(user_data_operation)
+    request.customer_match_user_list_metadata = customer_match_user_list_metadata
+
+    #logging.info(f'Request: {request}')
+
+    try:
+        # Make the upload user data request
+        response = user_data_service.upload_user_data(request=request)
+        logging.info(f'Response: {response}')
+        # Check if the operation was successful
+        if hasattr(response, 'partial_failure_error') and response.partial_failure_error:
+            for error in response.partial_failure_error.errors:
+                logging.error(f'Error: {error.error_code} - {error.message}')
+            logging.error(f'Failed to add user with email {email_address} to user list {user_list_id}')
+        else:
+            logging.info(f'Successfully added user with email {email_address} to user list {user_list_id}')
+    except GoogleAdsException as ex:
+        logging.error(f'Request failed with status {ex.error.code().name}')
+        logging.error(f'Error message: {ex.error.message}')
+        logging.error('Errors:')
+        for error in ex.failure.errors:
+            logging.error(f'\t{error.error_code}: {error.message}')
 
 ##########################FILLOUT SURVEYS#################################
 @app.route('/fillout-free', methods=['POST'])
@@ -227,6 +284,26 @@ def track_new_pc_user():
 
     logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : email: {email} & id: {id}")
     # logging.info(f"Clean PC data: {needed_data}")
+    config_string = GOOGLE_ADS_CONFIG
+    config_data = yaml.safe_load(config_string)
+    googleads_client = GoogleAdsClient.load_from_dict(config_data)
+    try:
+        # Replace with your actual customer ID and user list ID
+        customer_id = PC_GOOGLE_ADS_ID
+        user_list_id = PC_USER_LIST
+        email_address = email  # Replace with the actual email you want to add
+        add_email_to_customer_list(googleads_client, customer_id, user_list_id, email_address)
+    except GoogleAdsException as ex:
+        logging.error(f'Request failed with status {ex.error.code().name}')
+        logging.error(f'Error message: {ex.error.message}')
+        logging.error('Errors:')
+        for error in ex.failure.errors:
+            logging.error(f'\t{error.error_code}: {error.message}')
+        sys.exit(1)
+    except ValueError as ve:
+        logging.error(f'ValueError: {ve}')
+        sys.exit(1)
+
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
 ###############################EMAIL STATS################################
