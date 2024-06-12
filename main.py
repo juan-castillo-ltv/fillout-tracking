@@ -269,7 +269,7 @@ def track_longtime_paid_user_survey():
     
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
-###############################INTERCOM NEW USERS################################
+###############################INTERCOM NEW USERS TO GOOGLE ADS ################################
 @app.route('/pc-new-intercom-user', methods=['POST'])
 def track_new_pc_user():
     timestamp = datetime.datetime.now()
@@ -282,7 +282,7 @@ def track_new_pc_user():
     if not event_data:
         return jsonify({"error": "Invalid data"}), 400
 
-    logging.info(f"Received {app_name} webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
@@ -291,6 +291,114 @@ def track_new_pc_user():
         # Replace with your actual customer ID and user list ID
         customer_id = PC_GOOGLE_ADS_ID
         user_list_id = PC_USER_LIST
+        email_address = email  # Replace with the actual email you want to add
+        add_email_to_customer_list(googleads_client, customer_id, user_list_id, email_address)
+    except GoogleAdsException as ex:
+        logging.error(f'Request failed with status {ex.error.code().name}')
+        logging.error(f'Error message: {ex.error.message}')
+        logging.error('Errors:')
+        for error in ex.failure.errors:
+            logging.error(f'\t{error.error_code}: {error.message}')
+        sys.exit(1)
+    except ValueError as ve:
+        logging.error(f'ValueError: {ve}')
+        sys.exit(1)
+
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/icu-new-intercom-user', methods=['POST'])
+def track_new_icu_user():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    app_name = 'ICU'
+    id = event_data.get('data', {}).get('item', {}).get('id')
+    email = event_data.get('data', {}).get('item', {}).get('email')
+    #app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    # logging.info(f"Clean PC data: {needed_data}")
+    config_string = GOOGLE_ADS_CONFIG
+    config_data = yaml.safe_load(config_string)
+    googleads_client = GoogleAdsClient.load_from_dict(config_data)
+    try:
+        # Replace with your actual customer ID and user list ID
+        customer_id = ICU_GOOGLE_ADS_ID
+        user_list_id = ICU_USER_LIST
+        email_address = email  # Replace with the actual email you want to add
+        add_email_to_customer_list(googleads_client, customer_id, user_list_id, email_address)
+    except GoogleAdsException as ex:
+        logging.error(f'Request failed with status {ex.error.code().name}')
+        logging.error(f'Error message: {ex.error.message}')
+        logging.error('Errors:')
+        for error in ex.failure.errors:
+            logging.error(f'\t{error.error_code}: {error.message}')
+        sys.exit(1)
+    except ValueError as ve:
+        logging.error(f'ValueError: {ve}')
+        sys.exit(1)
+
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/tfx-new-intercom-user', methods=['POST'])
+def track_new_tfx_user():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    app_name = 'TFX'
+    id = event_data.get('data', {}).get('item', {}).get('id')
+    email = event_data.get('data', {}).get('item', {}).get('email')
+    #app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    # logging.info(f"Clean PC data: {needed_data}")
+    config_string = GOOGLE_ADS_CONFIG
+    config_data = yaml.safe_load(config_string)
+    googleads_client = GoogleAdsClient.load_from_dict(config_data)
+    try:
+        # Replace with your actual customer ID and user list ID
+        customer_id = TFX_GOOGLE_ADS_ID
+        user_list_id = TFX_USER_LIST
+        email_address = email  # Replace with the actual email you want to add
+        add_email_to_customer_list(googleads_client, customer_id, user_list_id, email_address)
+    except GoogleAdsException as ex:
+        logging.error(f'Request failed with status {ex.error.code().name}')
+        logging.error(f'Error message: {ex.error.message}')
+        logging.error('Errors:')
+        for error in ex.failure.errors:
+            logging.error(f'\t{error.error_code}: {error.message}')
+        sys.exit(1)
+    except ValueError as ve:
+        logging.error(f'ValueError: {ve}')
+        sys.exit(1)
+
+    return jsonify({"success": "webhook tracked succesfuly"}), 200
+
+@app.route('/cod-new-intercom-user', methods=['POST'])
+def track_new_cod_user():
+    timestamp = datetime.datetime.now()
+    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    event_data = request.get_json()
+    app_name = 'COD'
+    id = event_data.get('data', {}).get('item', {}).get('id')
+    email = event_data.get('data', {}).get('item', {}).get('email')
+    #app_name = re.search(r'^(.*?) -', event_data.get('formName')).group(1)
+    if not event_data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    # logging.info(f"Clean PC data: {needed_data}")
+    config_string = GOOGLE_ADS_CONFIG
+    config_data = yaml.safe_load(config_string)
+    googleads_client = GoogleAdsClient.load_from_dict(config_data)
+    try:
+        # Replace with your actual customer ID and user list ID
+        customer_id = COD_GOOGLE_ADS_ID
+        user_list_id = COD_USER_LIST
         email_address = email  # Replace with the actual email you want to add
         add_email_to_customer_list(googleads_client, customer_id, user_list_id, email_address)
     except GoogleAdsException as ex:
