@@ -10,12 +10,15 @@ import re
 import yaml
 import hashlib
 import sys
+import requests
+import json
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s', handlers=[logging.StreamHandler()])
 from config import DB_CREDENTIALS, GOOGLE_ADS_CONFIG, LTV_SAAS_GOOGLE_ADS_ID, PC_GOOGLE_ADS_ID, PC_USER_LIST, ICU_GOOGLE_ADS_ID 
 from config import ICU_USER_LIST, TFX_GOOGLE_ADS_ID, TFX_USER_LIST, COD_GOOGLE_ADS_ID, COD_USER_LIST
+from config import TFX_META_APP_ID, TFX_META_APP_SECRET, TFX_META_LONG_LIVED_TOKEN, TFX_META_AD_ACCOUNT_ID, TFX_META_CUSTOM_AUDIENCE_ID
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS on the Flask app
@@ -29,6 +32,43 @@ connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10,  # minconn, maxconn
                                                      user=DB_CREDENTIALS['user'],
                                                      password=DB_CREDENTIALS['password'],
                                                      sslmode=DB_CREDENTIALS['sslmode'])
+
+###################### ADD EMAILS TO META ADS ############################
+def meta_test_credentials():
+    url = f"https://graph.facebook.com/v12.0/act_{TFX_META_AD_ACCOUNT_ID}"
+    params = {
+        'access_token': TFX_META_LONG_LIVED_TOKEN,
+        'fields': 'name,account_status'
+    }
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        logging.info(f"Ad Account Name: {data['name']}")
+        logging.info(f"Account Status: {data['account_status']}")
+        logging.info("Your tokens and credentials are working correctly.")
+        return True
+    else:
+        logging.info("Failed to fetch ad account information.")
+        logging.info(f"Status Code: {response.status_code}")
+        logging.info(f"Error: {response.json()}")
+        return False
+
+# Function to add a user email to the custom audience
+def meta_add_user_to_custom_audience(user_email):
+    # Hash the email using SHA-256
+    hashed_email = hashlib.sha256(user_email.encode('utf-8')).hexdigest()
+
+    url = f"https://graph.facebook.com/v12.0/{TFX_META_CUSTOM_AUDIENCE_ID}/users"
+    payload = {
+        'payload': json.dumps({
+            'schema': 'EMAIL_SHA256',
+            'data': [hashed_email]
+        }),
+        'access_token': TFX_META_LONG_LIVED_TOKEN
+    }
+    response = requests.post(url, data=payload)
+    return response.json()
 
 ###################### ADD EMAILS TO GOOGLE ADS ############################
 def add_email_to_customer_list(client, customer_id, user_list_id, email_address):
@@ -269,7 +309,7 @@ def track_longtime_paid_user_survey():
     
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
-###############################INTERCOM NEW USERS TO GOOGLE ADS ################################
+###############################INTERCOM NEW USERS TO GOOGLE AND META ADS FOR TFX ################################
 @app.route('/pc-new-intercom-user', methods=['POST'])
 def track_new_pc_user():
     timestamp = datetime.datetime.now()
@@ -355,6 +395,8 @@ def track_new_tfx_user():
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    
+    # INSERT EMAIL IN GOOGLE ADS SEGMENT:
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
@@ -375,6 +417,17 @@ def track_new_tfx_user():
     except ValueError as ve:
         logging.error(f'ValueError: {ve}')
         sys.exit(1)
+    
+    # INSERT EMAIL IN META ADS AUDIENCE:
+    if meta_test_credentials():
+        add_response = meta_add_user_to_custom_audience(email)
+        logging.info(f"TFX Meta Add User Response: {add_response}")
+
+        # Check if the email was successfully added
+        if add_response.get('num_received') == 1 and add_response.get('num_invalid_entries') == 0:
+            logging.info(f"The email {email} was successfully inserted into the TFX Active Users List {TFX_META_CUSTOM_AUDIENCE_ID}")
+        else:
+            logging.info("The email insertion was not successful.")
 
     return jsonify({"success": "webhook tracked succesfuly"}), 200
 
