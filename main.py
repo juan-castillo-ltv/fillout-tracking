@@ -323,6 +323,8 @@ def track_new_pc_user():
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    logging.info("Full PC data:")
+    logging.info(json.dumps(event_data, indent=2))
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
@@ -359,6 +361,8 @@ def track_new_icu_user():
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    logging.info("Full ICU data:")
+    logging.info(json.dumps(event_data, indent=2))
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
@@ -395,7 +399,8 @@ def track_new_tfx_user():
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
-    
+    logging.info("Full TFX data:")
+    logging.info(json.dumps(event_data, indent=2))
     # INSERT EMAIL IN GOOGLE ADS SEGMENT:
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
@@ -444,6 +449,8 @@ def track_new_cod_user():
         return jsonify({"error": "Invalid data"}), 400
 
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
+    logging.info("Full COD data:")
+    logging.info(json.dumps(event_data, indent=2))
     # logging.info(f"Clean PC data: {needed_data}")
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
