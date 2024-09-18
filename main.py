@@ -339,12 +339,12 @@ def track_new_pc_user():
                     "ACTIVE": True,
                     "SHOP_URL": shop_url_contact,
                     "SHOPIFY_PLAN": event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('shopify_plan'), # Update this depending on the app
-                    "INSTALLED_AT": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "INSTALLED_AT": datetime.datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
                     "UNINSTALLED_AT": None,
                     "LAST_SUBSCRIPTION_CHARGED_AT": None,
                     "NUMBER_OF_SUBSCRIPTION_CHARGES": None,
                     "SUBSCRIPTION_CHARGE": None,
-                    "FIRST_INSTALL": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "FIRST_INSTALL": datetime.datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
                     "STORE_OPEN_AT": None,
                     "STORE_CLOSED_AT": None,
                     "IS_OPEN": False,
@@ -359,7 +359,7 @@ def track_new_pc_user():
                     "PLAN": event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('shopify_plan'), # Update this depending on the app,
                     "TIME_CLOSED": None,
                     "TIME_UNINSTALLED": None,
-                    "SIGNED_UP": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "SIGNED_UP": datetime.datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
                     "SHOPIFY_URL_RAW": shop_url_contact[0].split('.myshopify.com')[0] if '.myshopify.com' in shop_url_contact[0] else shop_url_contact[0],
                     "COUPON_REDEEMED": None,
                     "COUPON_REDEEMED_AT": None
