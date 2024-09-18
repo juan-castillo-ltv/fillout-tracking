@@ -17,8 +17,10 @@ from google.ads.googleads.errors import GoogleAdsException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s', handlers=[logging.StreamHandler()])
 from config import DB_CREDENTIALS, GOOGLE_ADS_CONFIG, LTV_SAAS_GOOGLE_ADS_ID, PC_GOOGLE_ADS_ID, PC_USER_LIST, ICU_GOOGLE_ADS_ID 
-from config import ICU_USER_LIST, TFX_GOOGLE_ADS_ID, TFX_USER_LIST, COD_GOOGLE_ADS_ID, COD_USER_LIST
-from config import TFX_META_APP_ID, TFX_META_APP_SECRET, TFX_META_LONG_LIVED_TOKEN, TFX_META_AD_ACCOUNT_ID, TFX_META_CUSTOM_AUDIENCE_ID
+from config import ICU_USER_LIST, TFX_GOOGLE_ADS_ID, TFX_USER_LIST, COD_GOOGLE_ADS_ID, COD_USER_LIST, APPS_CONFIG
+from config import TFX_META_APP_ID, TFX_META_APP_SECRET, TFX_META_LONG_LIVED_TOKEN, TFX_META_AD_ACCOUNT_ID, TFX_META_CUSTOM_AUDIENCE_ID, BREVO_API_TOKEN
+
+brevo_api_key = BREVO_API_TOKEN
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS on the Flask app
@@ -325,7 +327,83 @@ def track_new_pc_user():
     logging.info(f"Received {app_name} NEW USER webhook data at {formatted_timestamp} : email: {email} & id: {id}")
     logging.info("Full PC data:")
     logging.info(json.dumps(event_data, indent=2))
-    # logging.info(f"Clean PC data: {needed_data}")
+
+    #Add contact to Brevo Active User List
+    shop_url_contact = event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('shop_url'), # Update this depending on the app
+    payload = {
+                "email": event_data.get('data', {}).get('item', {}).get('email'),
+                "ext_id": event_data.get('data', {}).get('item', {}).get('id'),
+                "attributes": {
+                    "SHOP_NAME": event_data.get('data', {}).get('item', {}).get('name'),
+                    "APP": app_name, # Update this depending on the app
+                    "ACTIVE": True,
+                    "SHOP_URL": shop_url_contact,
+                    "SHOPIFY_PLAN": event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('shopify_plan'), # Update this depending on the app
+                    "INSTALLED_AT": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "UNINSTALLED_AT": None,
+                    "LAST_SUBSCRIPTION_CHARGED_AT": None,
+                    "NUMBER_OF_SUBSCRIPTION_CHARGES": None,
+                    "SUBSCRIPTION_CHARGE": None,
+                    "FIRST_INSTALL": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "STORE_OPEN_AT": None,
+                    "STORE_CLOSED_AT": None,
+                    "IS_OPEN": False,
+                    "DAYS_UNINSTALLED": 0,
+                    "DAYS_CLOSED": 0,
+                    "TRIAL_DAYS_REMAINING": 14, # Update this depending on the app
+                    "DAYS_SINCE_BILLED": None,
+                    "PAID_ACTIVE": False,
+                    "COUNTRY": event_data.get('data', {}).get('item', {}).get('location',{}).get('country'),
+                    "REGION": event_data.get('data', {}).get('item', {}).get('location',{}).get('region'),
+                    "CITY": event_data.get('data', {}).get('item', {}).get('location',{}).get('city'),
+                    "PLAN": event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('shopify_plan'), # Update this depending on the app,
+                    "TIME_CLOSED": None,
+                    "TIME_UNINSTALLED": None,
+                    "SIGNED_UP": datetime.fromisoformat(event_data.get('data', {}).get('item', {}).get('created_at')).date().strftime("%Y-%m-%d"),
+                    "SHOPIFY_URL_RAW": shop_url_contact[0].split('.myshopify.com')[0] if '.myshopify.com' in shop_url_contact[0] else shop_url_contact[0],
+                    "COUPON_REDEEMED": None,
+                    "COUPON_REDEEMED_AT": None
+                },
+                "updateEnabled": True,
+                "listIds": [int(APPS_CONFIG[0]["brevo_active_list"])] # Update this depending on the app
+            }
+    # Add the correct attributes based on the `app` value
+    if app_name == 'PC':
+        payload["attributes"].update({
+            "PC_INSTALLED": True
+        })
+    elif app_name == 'ICU':
+        payload["attributes"].update({
+            "ICU_INSTALLED": True
+        })
+    elif app_name == 'TFX':    
+        payload["attributes"].update({
+            "TFX_INSTALLED": True
+        })
+    elif app_name == 'SR':
+        payload["attributes"].update({
+            "SR_INSTALLED": True
+        })
+    elif app_name == 'SATC':
+        payload["attributes"].update({
+            "SATC_INSTALLED": True
+        })
+
+    headers = {
+        'accept': 'application/json',
+        'api-key': brevo_api_key,
+        'content-type': 'application/json',
+    }
+    brevo_add_contacts_url = 'https://api.brevo.com/v3/contacts'        
+    try:
+        response = requests.post(brevo_add_contacts_url, headers=headers, json=payload)
+        #logging.info(json.dumps(payload, indent=4))
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        logging.info(f"Contacts successfully added to list ID {37}.")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to add contacts. Error: {e}. Response: {response.text}")       
+
+    # Add contact to Google Ads List
     config_string = GOOGLE_ADS_CONFIG
     config_data = yaml.safe_load(config_string)
     googleads_client = GoogleAdsClient.load_from_dict(config_data)
