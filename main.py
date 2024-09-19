@@ -671,7 +671,7 @@ def track_new_cod_user():
     timestamp = datetime.datetime.now()
     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_data = request.get_json()
-    app_raw = contact.get('custom_attributes',{}).get('App name')
+    app_raw = event_data.get('data', {}).get('item', {}).get('custom_attributes',{}).get('App name')
     app_name_brevo = "SATC" if app_raw == 'Sticky' else "SR"
     brevo_list = APPS_CONFIG[3]["brevo_active_list"] if app_name_brevo == "SR" else APPS_CONFIG[4]["brevo_active_list"]
     app_name = 'COD'
